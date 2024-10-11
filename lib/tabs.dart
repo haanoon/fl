@@ -1,19 +1,24 @@
 import 'package:flutter/material.dart';
 
-class dragTabBar extends StatefulWidget implements PreferredSizeWidget {
+class DragTabBar extends StatefulWidget implements PreferredSizeWidget {
   final List<Widget> tabs;
   final TabController controller;
   final void Function(int, int) onReorder;
-  const dragTabBar(
-      {required this.tabs, required this.controller, required this.onReorder});
+  final void Function(int) onTap;
+  const DragTabBar(
+      {super.key,
+      required this.tabs,
+      required this.controller,
+      required this.onReorder,
+      required this.onTap});
 
   @override
-  State<dragTabBar> createState() => _dragTabBarState();
+  State<DragTabBar> createState() => _DragTabBarState();
   @override
   Size get preferredSize => const Size.fromHeight(48);
 }
 
-class _dragTabBarState extends State<dragTabBar> {
+class _DragTabBarState extends State<DragTabBar> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -26,9 +31,15 @@ class _dragTabBarState extends State<dragTabBar> {
               .asMap()
               .map((i, tab) => MapEntry(
                   i,
-                  Container(
+                  GestureDetector(
                     key: ValueKey(i),
-                    child: tab,
+                    onTap: () {
+                      widget.onTap(i);
+                    },
+                    child: Container(
+                      key: ValueKey('$i-a'),
+                      child: tab,
+                    ),
                   )))
               .values
               .toList()),

@@ -66,7 +66,7 @@ class _DynamicTab1State extends State<DynamicTab1>
         title: const Text('Floors'),
         elevation: 10,
         backgroundColor: const Color.fromARGB(255, 30, 183, 140),
-        bottom: dragTabBar(
+        bottom: DragTabBar(
           tabs: tabs.map((tabData) => tabData.title).toList(),
           controller: _controller, // Pass the controller
           onReorder: (oldIndex, newIndex) {
@@ -76,6 +76,11 @@ class _DynamicTab1State extends State<DynamicTab1>
               }
               final TabData tab = tabs.removeAt(oldIndex);
               tabs.insert(newIndex, tab);
+            });
+          },
+          onTap: (index) {
+            setState(() {
+              _controller.index = index;
             });
           },
         ),
@@ -155,16 +160,22 @@ class _DynamicTab1State extends State<DynamicTab1>
       int nextIndex = tabs.length + 1;
       tabs.add(
         TabData(
-          index: nextIndex,
-          title: Tab(
-            icon: const Icon(Icons.layers, color: Colors.black),
-            child: Text(
-              floorName,
-              style: const TextStyle(color: Colors.black),
+            index: nextIndex,
+            title: Tab(
+              icon: const Icon(Icons.layers, color: Colors.black),
+              child: Text(
+                floorName,
+                style: const TextStyle(color: Colors.black),
+              ),
             ),
-          ),
-          content: const Center(child: Home()),
-        ),
+            // content: const Center(child: Home()),
+            content: nextIndex % 2 == 0
+                ? const Center(
+                    child: Text('okokokokokokokok'),
+                  )
+                : const Center(
+                    child: Text('lalalalalalalalala'),
+                  )),
       );
 
       // Use the existing controller to avoid creating a new one

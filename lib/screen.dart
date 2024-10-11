@@ -2,6 +2,7 @@ import 'package:dynamic_tabbar/dynamic_tabbar.dart';
 
 import 'package:flutter/material.dart';
 import 'package:tabmanagement/old/painter2.dart';
+import 'package:tabmanagement/tabs.dart';
 
 class Floor3 extends StatefulWidget {
   const Floor3({super.key});
@@ -50,20 +51,32 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
               icon: Icon(Icons.delete),
             )
         ],
-        bottom: TabBar(
+        bottom: DragTabBar(
+          onTap: (index) {
+            _tcontroller.index = index;
+          },
+          tabs: floortabs.map((e) => e.title).toList(),
           controller: _tcontroller,
-          tabs: floortabs.map((tabdata) => tabdata.title).toList(),
+          onReorder: (oldindex, newindex) {
+            setState(() {
+              if (newindex > oldindex) {
+                newindex -= 1;
+              }
+              final TabData tab = floortabs.removeAt(oldindex);
+              floortabs.insert(newindex, tab);
+            });
+          },
         ),
       ),
-      // body: TabBarView(
-      //   controller: _tcontroller,
-      //   children: floortabs.map((tabdata) => tabdata.content).toList(),
-      // ),
-      body: IndexedStack(
-        index:
-            _tcontroller.index, // The current index based on the selected tab
-        children: floortabs.map((tabdata) => tabdata.content).toList(),
-      ),
+      body: TabBarView(
+          controller: _tcontroller,
+          children: floortabs.isNotEmpty
+              ? floortabs.map((e) => e.content).toList()
+              : [
+                  const Center(
+                    child: Text('No Floors Added Yet'),
+                  )
+                ]),
     );
   }
 
@@ -99,12 +112,12 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
 
   void addtabdetails(String floorname) {
     setState(() {
-      Painter2 newpainter = Painter2(
+      Painter2 newpainter = const Painter2(
         initialoffsets: [
-          const Offset(20, 20),
-          const Offset(780, 20),
-          const Offset(780, 780),
-          const Offset(20, 780),
+          Offset(20, 20),
+          Offset(780, 20),
+          Offset(780, 780),
+          Offset(20, 780),
         ],
       );
       painter.add(newpainter);
@@ -114,9 +127,16 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
             icon: Icon(Icons.layers),
             child: Text(floorname),
           ),
-          content: Center(
-            child: newpainter,
-          )));
+          // content: Center(
+          //   child: newpainter,
+          // )
+          content: floortabs.length % 2 == 0
+              ? const Center(
+                  child: Text('okokokokokokokok'),
+                )
+              : const Center(
+                  child: Text('lalalalalalalalala'),
+                )));
       _tcontroller.dispose;
       _tcontroller = TabController(length: floortabs.length, vsync: this);
     });
