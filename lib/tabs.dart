@@ -5,12 +5,14 @@ class DragTabBar extends StatefulWidget implements PreferredSizeWidget {
   final TabController controller;
   final void Function(int, int) onReorder;
   final void Function(int) onTap;
+  final void Function(int) onDoubleTap;
   const DragTabBar(
       {super.key,
       required this.tabs,
       required this.controller,
       required this.onReorder,
-      required this.onTap});
+      required this.onTap,
+      required this.onDoubleTap});
 
   @override
   State<DragTabBar> createState() => _DragTabBarState();
@@ -19,11 +21,26 @@ class DragTabBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _DragTabBarState extends State<DragTabBar> {
+  int currentindex = 0;
+  @override
+  void initState() {
+    super.initState();
+    currentindex = widget.controller.index;
+    widget.controller.addListener(() {
+      setState(() {
+        currentindex = widget.controller.index;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final tabWidth = screenWidth / widget.tabs.length;
+    final tabheight = MediaQuery.sizeOf(context).height * .075;
     return SizedBox(
-      height: 48,
-      width: MediaQuery.sizeOf(context).width,
+      height: tabheight,
+      width: screenWidth,
       child: ReorderableListView(
           scrollDirection: Axis.horizontal,
           onReorder: widget.onReorder,
@@ -31,14 +48,32 @@ class _DragTabBarState extends State<DragTabBar> {
               .asMap()
               .map((i, tab) => MapEntry(
                   i,
-                  GestureDetector(
+                  ReorderableDragStartListener(
                     key: ValueKey(i),
-                    onTap: () {
-                      widget.onTap(i);
-                    },
-                    child: Container(
-                      key: ValueKey('$i-a'),
-                      child: tab,
+                    index: i,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          currentindex = i;
+                        });
+                        widget.onTap(i);
+                      },
+                      onDoubleTap: () {
+                        widget.onDoubleTap(i);
+                        print('Double Tap');
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(1.5),
+                        child: Container(
+                          width: tabWidth,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                              color: i == currentindex
+                                  ? Colors.green[400]
+                                  : Colors.grey),
+                          child: tab,
+                        ),
+                      ),
                     ),
                   )))
               .values

@@ -67,6 +67,7 @@ class _DynamicTab1State extends State<DynamicTab1>
         elevation: 10,
         backgroundColor: const Color.fromARGB(255, 30, 183, 140),
         bottom: DragTabBar(
+          onDoubleTap: (index) {},
           tabs: tabs.map((tabData) => tabData.title).toList(),
           controller: _controller, // Pass the controller
           onReorder: (oldIndex, newIndex) {

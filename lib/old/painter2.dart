@@ -21,44 +21,43 @@ class _PainterState extends State<Painter2> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.only(top: 30.0, left: 30.0),
-        child: GestureDetector(
-          onPanStart: (details) {
-            pointIndex = getPoint(details.localPosition);
-          },
-          onPanUpdate: (details) {
-            if (pointIndex != null) {
-              setState(() {
-                const double gridSize = 20.0;
-                double minx = 0, miny = 0;
-                double maxx = 800, maxy = 800;
-                double x =
-                    (details.localPosition.dx / gridSize).round() * gridSize;
-                double y =
-                    (details.localPosition.dy / gridSize).round() * gridSize;
-                x = x.clamp(minx, maxx);
-                y = y.clamp(miny, maxy);
-                offsets[pointIndex!] = Offset(x, y);
-              });
-            }
-            print(details.localPosition);
-          },
-          onPanEnd: (details) {
+    return SizedBox(
+      width: 100,
+      height: 100,
+      child: GestureDetector(
+        onPanStart: (details) {
+          pointIndex = getPoint(details.localPosition);
+        },
+        onPanUpdate: (details) {
+          if (pointIndex != null) {
             setState(() {
-              pointIndex = null;
+              const double gridSize = 20.0;
+              double minx = 0, miny = 0;
+              double maxx = 800, maxy = 800;
+              double x =
+                  (details.localPosition.dx / gridSize).round() * gridSize;
+              double y =
+                  (details.localPosition.dy / gridSize).round() * gridSize;
+              x = x.clamp(minx, maxx);
+              y = y.clamp(miny, maxy);
+              offsets[pointIndex!] = Offset(x, y);
             });
-          },
-          child: Stack(
-            children: [
-              CustomPaint(
-                // Pass the local offsets to PaintInstance
-                painter: PaintInstance(offsets: offsets),
-                size: const Size(double.infinity, double.infinity),
-              ),
-            ],
-          ),
+          }
+          print(details.localPosition);
+        },
+        onPanEnd: (details) {
+          setState(() {
+            pointIndex = null;
+          });
+        },
+        child: Stack(
+          children: [
+            CustomPaint(
+              // Pass the local offsets to PaintInstance
+              painter: PaintInstance(offsets: offsets),
+              size: const Size(double.infinity, double.infinity),
+            ),
+          ],
         ),
       ),
     );

@@ -19,14 +19,12 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _tcontroller = TabController(length: floortabs.length, vsync: this);
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _tcontroller.dispose();
     super.dispose();
   }
@@ -35,20 +33,20 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Floors'),
+        title: const Text('Floors'),
         actions: [
           IconButton(
             onPressed: () {
               addtab();
             },
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
           ),
           if (floortabs.isNotEmpty)
             IconButton(
               onPressed: () {
                 deletetab(_tcontroller.index);
               },
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
             )
         ],
         bottom: DragTabBar(
@@ -57,19 +55,36 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
           },
           tabs: floortabs.map((e) => e.title).toList(),
           controller: _tcontroller,
+          onDoubleTap: (index) {
+            doubleTapOptions(index);
+          },
           onReorder: (oldindex, newindex) {
             setState(() {
+              int currentindex = _tcontroller.index;
+
               if (newindex > oldindex) {
                 newindex -= 1;
               }
               final TabData tab = floortabs.removeAt(oldindex);
               floortabs.insert(newindex, tab);
+              if (currentindex == oldindex) {
+                _tcontroller.index = newindex;
+              } else if (currentindex > oldindex && currentindex <= newindex) {
+                _tcontroller.index -= 1;
+              } else if (currentindex < oldindex && currentindex >= newindex) {
+                _tcontroller.index += 1;
+              }
+              _tcontroller.dispose();
+              _tcontroller =
+                  TabController(length: floortabs.length, vsync: this);
+              currentindex = _tcontroller.index;
             });
           },
         ),
       ),
       body: TabBarView(
           controller: _tcontroller,
+          physics: const NeverScrollableScrollPhysics(),
           children: floortabs.isNotEmpty
               ? floortabs.map((e) => e.content).toList()
               : [
@@ -80,13 +95,55 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
     );
   }
 
+  void doubleTapOptions(int tabindex) {
+    String floorname = floortabs[tabindex].title.child.toString();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Rename Floor'),
+            content: TextField(
+              onChanged: (value) {
+                floorname = value;
+              },
+              decoration: const InputDecoration(hintText: 'Floor name'),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    if (floorname.isNotEmpty) {
+                      print(floorname);
+                      setState(() {
+                        floortabs[tabindex] = TabData(
+                          index: tabindex + 1,
+                          title: Tab(
+                            icon: const Icon(Icons.layers),
+                            child: Text(floorname),
+                          ),
+                          content: floortabs[tabindex].content,
+                        );
+                      });
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Rename')),
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel')),
+            ],
+          );
+        });
+  }
+
   void addtab() {
     String newfloor = '';
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Add New Floor'),
+            title: const Text('Add New Floor'),
             content: TextField(
               onChanged: (value) {
                 newfloor = value;
@@ -98,13 +155,13 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
                   if (newfloor.isNotEmpty) addtabdetails(newfloor);
                   Navigator.of(context).pop();
                 },
-                child: Text('Add'),
+                child: const Text('Add'),
               ),
               TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('Cancel'))
+                  child: const Text('Cancel'))
             ],
           );
         });
@@ -120,23 +177,27 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
           Offset(20, 780),
         ],
       );
+
       painter.add(newpainter);
       floortabs.add(TabData(
           index: floortabs.length + 1,
           title: Tab(
-            icon: Icon(Icons.layers),
+            icon: const Icon(Icons.layers),
             child: Text(floorname),
           ),
-          // content: Center(
-          //   child: newpainter,
-          // )
-          content: floortabs.length % 2 == 0
-              ? const Center(
-                  child: Text('okokokokokokokok'),
-                )
-              : const Center(
-                  child: Text('lalalalalalalalala'),
-                )));
+          content: Center(
+            child: newpainter,
+          )
+          // content: floortabs.length % 2 == 0
+          //     ? const Center(
+          //         child: Text(
+          //           'okokokokokokokok',
+          //         ),
+          //       )
+          //     : const Center(
+          //         child: Text('lalalalalalal'),
+          //       )
+          ));
       _tcontroller.dispose;
       _tcontroller = TabController(length: floortabs.length, vsync: this);
     });
@@ -147,8 +208,8 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Confirm Delete Floor'),
-            content: Text('Are you sure you want to delete this floor'),
+            title: const Text('Confirm Delete Floor'),
+            content: const Text('Are you sure you want to delete this floor'),
             actions: [
               TextButton(
                 onPressed: () {
@@ -160,13 +221,13 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
                   });
                   Navigator.of(context).pop();
                 },
-                child: Text('Delete'),
+                child: const Text('Delete'),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Cancel'),
+                child: const Text('Cancel'),
               ),
             ],
           );
