@@ -1,5 +1,6 @@
 import 'package:dynamic_tabbar/dynamic_tabbar.dart';
 import 'package:flutter/material.dart';
+import 'package:tabmanagement/floor_plan/floorPlan.dart';
 
 class FloorM3 extends StatefulWidget {
   const FloorM3({super.key});
@@ -10,21 +11,23 @@ class FloorM3 extends StatefulWidget {
 
 class _FloorM3State extends State<FloorM3> with TickerProviderStateMixin {
   late TabController _tabController;
+  List<Floorplan> painter = [];
   int selectedfloor = 0;
-
-  List<TabData> floortabs = [
-    TabData(
-        index: 1,
-        title: Tab(
-          child: Text('First Floor '),
-        ),
-        content: Text('hhh')),
-  ];
 
   @override
   void initState() {
-    // TODO: implement initState
+    Floorplan tab1 = Floorplan();
+    painter.add(tab1);
     super.initState();
+    List<TabData> floortabs = [
+      TabData(
+          index: 1,
+          title: Tab(
+            child: Text('First Floor '),
+          ),
+          content: Floorplan()),
+    ];
+
     _tabController = TabController(length: floortabs.length, vsync: this);
   }
 
@@ -148,12 +151,14 @@ class _FloorM3State extends State<FloorM3> with TickerProviderStateMixin {
   }
 
   void addtabdetails(String floorname) {
+    Floorplan newpainter = Floorplan();
+    painter.add(newpainter);
     floortabs.add(TabData(
       index: floortabs.length + 1,
       title: Tab(
         child: Text(floorname),
       ),
-      content: Text('dfdf'),
+      content: newpainter,
     ));
 
     setState(() {
