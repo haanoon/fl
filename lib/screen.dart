@@ -1,32 +1,43 @@
 import 'package:dynamic_tabbar/dynamic_tabbar.dart';
-
 import 'package:flutter/material.dart';
-import 'package:tabmanagement/old/painter2.dart';
-import 'package:tabmanagement/tabs.dart';
 
-class Floor3 extends StatefulWidget {
-  const Floor3({super.key});
+class FloorM3 extends StatefulWidget {
+  const FloorM3({super.key});
 
   @override
-  State<Floor3> createState() => _Floor3State();
+  State<FloorM3> createState() => _FloorM3State();
 }
 
-class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
-  List<TabData> floortabs = [];
-  List<Painter2> painter = [];
+class _FloorM3State extends State<FloorM3> with TickerProviderStateMixin {
+  late TabController _tabController;
+  int selectedfloor = 0;
 
-  late TabController _tcontroller;
+  List<TabData> floortabs = [
+    TabData(
+        index: 1,
+        title: Tab(
+          child: Text('First Floor '),
+        ),
+        content: Text('hhh')),
+  ];
 
   @override
   void initState() {
+    // TODO: implement initState
     super.initState();
-    _tcontroller = TabController(length: floortabs.length, vsync: this);
+    _tabController = TabController(length: floortabs.length, vsync: this);
   }
 
   @override
   void dispose() {
-    _tcontroller.dispose();
+    _tabController.dispose();
     super.dispose();
+  }
+
+  void _selectFloor(int index) {
+    setState(() {
+      selectedfloor = index;
+    });
   }
 
   @override
@@ -34,6 +45,13 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Floors'),
+        bottom: TabBar(
+          tabs: floortabs.map((e) => e.title).toList(),
+          controller: _tabController,
+          indicatorColor: Theme.of(context).colorScheme.primary,
+          labelColor: Theme.of(context).colorScheme.primary,
+          unselectedLabelColor: Theme.of(context).colorScheme.primary,
+        ),
         actions: [
           IconButton(
             onPressed: () {
@@ -44,97 +62,59 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
           if (floortabs.isNotEmpty)
             IconButton(
               onPressed: () {
-                deletetab(_tcontroller.index);
+                deletetab(selectedfloor);
               },
               icon: const Icon(Icons.delete),
             )
         ],
-        bottom: DragTabBar(
-          onTap: (index) {
-            _tcontroller.index = index;
-          },
-          tabs: floortabs.map((e) => e.title).toList(),
-          controller: _tcontroller,
-          onDoubleTap: (index) {
-            doubleTapOptions(index);
-          },
-          onReorder: (oldindex, newindex) {
-            setState(() {
-              int currentindex = _tcontroller.index;
-
-              if (newindex > oldindex) {
-                newindex -= 1;
-              }
-              final TabData tab = floortabs.removeAt(oldindex);
-              floortabs.insert(newindex, tab);
-              if (currentindex == oldindex) {
-                _tcontroller.index = newindex;
-              } else if (currentindex > oldindex && currentindex <= newindex) {
-                _tcontroller.index -= 1;
-              } else if (currentindex < oldindex && currentindex >= newindex) {
-                _tcontroller.index += 1;
-              }
-              _tcontroller.dispose();
-              _tcontroller =
-                  TabController(length: floortabs.length, vsync: this);
-              currentindex = _tcontroller.index;
-            });
-          },
+      ),
+      drawer: Drawer(
+        child: Column(
+          children: [
+            Container(
+              key: const ValueKey('Header'),
+              padding: const EdgeInsets.all(16.0),
+              alignment: Alignment.centerLeft,
+              child: const Text(
+                'Manage Floors',
+                style: TextStyle(color: Colors.black, fontSize: 24),
+              ),
+            ),
+            Expanded(
+                child: ReorderableListView(onReorder: _onReorder, children: [
+              for (int index = 0; index < floortabs.length; index++)
+                ListTile(
+                  key: ValueKey(floortabs[index].index),
+                  title: Text((floortabs[index].title.child as Text).data ??
+                      "Unknown Floor"),
+                  selected: selectedfloor == index,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                          onPressed: () {
+                            _rename(index);
+                          },
+                          icon: const Icon(Icons.edit)),
+                    ],
+                  ),
+                  onTap: () {
+                    setState(() {
+                      selectedfloor == index;
+                      _tabController.index = index;
+                    });
+                    Navigator.pop(context);
+                  },
+                )
+            ]))
+          ],
         ),
       ),
       body: TabBarView(
-          controller: _tcontroller,
-          physics: const NeverScrollableScrollPhysics(),
-          children: floortabs.isNotEmpty
-              ? floortabs.map((e) => e.content).toList()
-              : [
-                  const Center(
-                    child: Text('No Floors Added Yet'),
-                  )
-                ]),
+        children: floortabs.map((tab) => tab.content).toList(),
+        controller: _tabController,
+      ),
     );
-  }
-
-  void doubleTapOptions(int tabindex) {
-    String floorname = floortabs[tabindex].title.child.toString();
-    showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Rename Floor'),
-            content: TextField(
-              onChanged: (value) {
-                floorname = value;
-              },
-              decoration: const InputDecoration(hintText: 'Floor name'),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    if (floorname.isNotEmpty) {
-                      print(floorname);
-                      setState(() {
-                        floortabs[tabindex] = TabData(
-                          index: tabindex + 1,
-                          title: Tab(
-                            icon: const Icon(Icons.layers),
-                            child: Text(floorname),
-                          ),
-                          content: floortabs[tabindex].content,
-                        );
-                      });
-                    }
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Rename')),
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cancel')),
-            ],
-          );
-        });
   }
 
   void addtab() {
@@ -151,72 +131,118 @@ class _Floor3State extends State<Floor3> with TickerProviderStateMixin {
             ),
             actions: [
               TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel')),
+              TextButton(
                 onPressed: () {
                   if (newfloor.isNotEmpty) addtabdetails(newfloor);
                   Navigator.of(context).pop();
                 },
                 child: const Text('Add'),
-              ),
-              TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cancel'))
+              )
             ],
           );
         });
   }
 
   void addtabdetails(String floorname) {
-    setState(() {
-      Painter2 newpainter = const Painter2(
-        initialoffsets: [
-          Offset(20, 20),
-          Offset(780, 20),
-          Offset(780, 780),
-          Offset(20, 780),
-        ],
-      );
+    floortabs.add(TabData(
+      index: floortabs.length + 1,
+      title: Tab(
+        child: Text(floorname),
+      ),
+      content: Text('dfdf'),
+    ));
 
-      painter.add(newpainter);
-      floortabs.add(TabData(
-          index: floortabs.length + 1,
-          title: Tab(
-            icon: const Icon(Icons.layers),
-            child: Text(floorname),
-          ),
-          content: Center(
-            child: newpainter,
-          )
-          // content: floortabs.length % 2 == 0
-          //     ? const Center(
-          //         child: Text(
-          //           'okokokokokokokok',
-          //         ),
-          //       )
-          //     : const Center(
-          //         child: Text('lalalalalalal'),
-          //       )
-          ));
-      _tcontroller.dispose;
-      _tcontroller = TabController(length: floortabs.length, vsync: this);
+    setState(() {
+      _tabController.dispose();
+      _tabController = TabController(length: floortabs.length, vsync: this);
+      _tabController.index = floortabs.length - 1;
     });
   }
 
+  void _onReorder(int oldindex, int newindex) {
+    if (newindex > oldindex) {
+      newindex -= 1;
+    }
+    final TabData tab = floortabs.removeAt(oldindex);
+    floortabs.insert(newindex, tab);
+
+    setState(() {
+      _tabController.dispose();
+      _tabController = TabController(length: floortabs.length, vsync: this);
+    });
+  }
+
+  void _rename(int tabindex) {
+    String floorname = floortabs[tabindex].title.child.toString();
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Rename Floor'),
+            content: TextField(
+              onChanged: (value) {
+                floorname = value;
+              },
+              decoration: const InputDecoration(hintText: 'Floor name'),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel')),
+              TextButton(
+                  onPressed: () {
+                    if (floorname.isNotEmpty) {
+                      print(floorname);
+                      setState(() {
+                        floortabs[tabindex] = TabData(
+                          index: tabindex + 1,
+                          title: Tab(
+                            child: Text(floorname),
+                          ),
+                          content: floortabs[tabindex].content,
+                        );
+                      });
+                    }
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Rename')),
+            ],
+          );
+        });
+  }
+
   void deletetab(int floorindex) {
+    String floorname =
+        (floortabs[floorindex].title.child as Text).data ?? "Unknown Floor";
     showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: const Text('Confirm Delete Floor'),
-            content: const Text('Are you sure you want to delete this floor'),
+            content: RichText(
+                text: TextSpan(
+                    text: 'Are you sure you want to delete ',
+                    style: TextStyle(color: Colors.black),
+                    children: [
+                  TextSpan(
+                      text: floorname,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.black)),
+                  TextSpan(text: '?')
+                ])),
             actions: [
               TextButton(
                 onPressed: () {
                   setState(() {
                     floortabs.removeAt(floorindex);
-                    _tcontroller.dispose();
-                    _tcontroller =
+                    _tabController.dispose();
+                    _tabController =
                         TabController(length: floortabs.length, vsync: this);
                   });
                   Navigator.of(context).pop();
